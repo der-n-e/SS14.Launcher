@@ -1,7 +1,6 @@
-﻿CREATE TABLE Login (
+CREATE TABLE Login (
     UserId TEXT PRIMARY KEY NOT NULL, -- GUID
     UserName TEXT NOT NULL,
-    Token TEXT NOT NULL,
     Expires DATETIME NOT NULL
 );
 

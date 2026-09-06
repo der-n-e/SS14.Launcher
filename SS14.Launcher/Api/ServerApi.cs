@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Diagnostics.CodeAnalysis;
 using System.Text.Json.Serialization;
 
@@ -9,13 +9,13 @@ public static class ServerApi
     // https://docs.spacestation14.io/en/engine/http-api
     public sealed record ServerStatus(
         [property: JsonPropertyName("name")] string? Name,
-        [property: JsonPropertyName("players")]
-        int PlayerCount,
-        [property: JsonPropertyName("soft_max_players")]
-        int SoftMaxPlayerCount,
+        [property: JsonPropertyName("players")] int PlayerCount,
+        [property: JsonPropertyName("soft_max_players")] int SoftMaxPlayerCount,
         [property: JsonPropertyName("round_start_time")] string? RoundStartTime,
         [property: JsonPropertyName("run_level")] GameRunLevel? RunLevel,
-        [property: JsonPropertyName("tags")] string[]? Tags);
+        [property: JsonPropertyName("tags")] string[]? Tags,
+        [property: JsonPropertyName("preset")] string? Preset,
+        [property: JsonPropertyName("map")] string? Map);
 
     public enum GameRunLevel
     {

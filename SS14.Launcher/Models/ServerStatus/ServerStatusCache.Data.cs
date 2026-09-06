@@ -13,6 +13,8 @@ public sealed class ServerStatusData : ObservableObject, IServerStatusData
     private int _softMaxPlayerCount;
     private DateTime? _roundStartTime;
     private GameRoundStatus _roundStatus;
+    private string? _map;
+    private string? _preset;
     private ServerStatusCode _status = ServerStatusCode.FetchingStatus;
     private ServerStatusInfoCode _statusInfo = ServerStatusInfoCode.NotFetched;
     private ServerInfoLink[]? _links;
@@ -68,6 +70,18 @@ public sealed class ServerStatusData : ObservableObject, IServerStatusData
     {
         get => _playerCount;
         set => SetProperty(ref _playerCount, value);
+    }
+
+    public string? Map
+    {
+        get => _map;
+        set => SetProperty(ref _map, value);
+    }
+
+    public string? Preset
+    {
+        get => _preset;
+        set => SetProperty(ref _preset, value);
     }
 
     /// <summary>

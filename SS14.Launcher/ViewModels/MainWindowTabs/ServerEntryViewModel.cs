@@ -114,6 +114,10 @@ public sealed class ServerEntryViewModel : ObservableRecipient, IRecipient<Favor
             ? _loc.GetString("server-entry-status-lobby")
             : "";
 
+    public string Map => _cacheData.Map ?? _loc.GetString("server-entry-unknown");
+
+    public string Preset => _cacheData.Preset ?? _loc.GetString("server-entry-unknown");
+
     public string Description
     {
         get
@@ -262,6 +266,14 @@ public sealed class ServerEntryViewModel : ObservableRecipient, IRecipient<Favor
             case nameof(IServerStatusData.StatusInfo):
                 OnPropertyChanged(nameof(Description));
                 OnPropertyChanged(nameof(HaveData));
+                break;
+
+            case nameof(IServerStatusData.Map):
+                OnPropertyChanged(nameof(Map));
+                break;
+
+            case nameof(IServerStatusData.Preset):
+                OnPropertyChanged(nameof(Preset));
                 break;
         }
     }

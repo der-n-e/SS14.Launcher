@@ -125,6 +125,8 @@ public sealed class ServerStatusCache : IServerSource
         data.Name = status.Name;
         data.PlayerCount = Math.Max(0, status.PlayerCount);
         data.SoftMaxPlayerCount = Math.Max(0, status.SoftMaxPlayerCount);
+        data.Map = status.Map;
+        data.Preset = status.Preset;
 
         switch (status.RunLevel)
         {

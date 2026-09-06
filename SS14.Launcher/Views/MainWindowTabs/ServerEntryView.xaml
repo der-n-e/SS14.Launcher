@@ -28,6 +28,8 @@
         <Grid>
           <Grid.ColumnDefinitions>
             <ColumnDefinition Width="*" /> <!-- Server Name -->
+            <ColumnDefinition SharedSizeGroup="MapCol" MinWidth="80" Width="Auto" />
+            <ColumnDefinition SharedSizeGroup="PresetCol" MinWidth="80" Width="Auto" />
             <ColumnDefinition SharedSizeGroup="TimeCol" MinWidth="80" Width="Auto" />
             <ColumnDefinition SharedSizeGroup="StatusCol" MinWidth="80" Width="Auto" />
             <ColumnDefinition SharedSizeGroup="ConnectCol" Width="Auto" />
@@ -45,6 +47,14 @@
           </Border>
 
           <Border Grid.Column="1" Classes="GridCell" IsVisible="{Binding HaveData}">
+            <TextBlock DockPanel.Dock="Right" Text="{Binding Map}" />
+          </Border>
+
+          <Border Grid.Column="2" Classes="GridCell" IsVisible="{Binding HaveData}">
+            <TextBlock DockPanel.Dock="Right" Text="{Binding Preset}" />
+          </Border>
+          
+          <Border Grid.Column="3" Classes="GridCell" IsVisible="{Binding HaveData}">
             <Panel>
               <controls:TimerTextCell Value="{Binding RoundStartTime}"
                 IsVisible="{Binding RoundStatusString,Converter={x:Static StringConverters.IsNullOrEmpty}}" />
@@ -55,11 +65,11 @@
             </Panel>
           </Border>
 
-          <Border Grid.Column="2" Classes="GridCell" IsVisible="{Binding HaveData}">
+          <Border Grid.Column="4" Classes="GridCell" IsVisible="{Binding HaveData}">
             <TextBlock DockPanel.Dock="Right" Classes="Numeric" Text="{Binding PlayerCountString}" />
           </Border>
 
-          <Border Grid.Column="3" Classes="GridCell">
+          <Border Grid.Column="5" Classes="GridCell">
             <Button IsEnabled="{Binding IsOnline}" DockPanel.Dock="Right"
               Content="{loc:Loc server-entry-connect}"
               Command="{Binding ConnectPressed}" />

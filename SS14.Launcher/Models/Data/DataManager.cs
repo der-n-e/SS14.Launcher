@@ -44,6 +44,7 @@ public sealed class DataManager : ObservableObject
     private readonly SourceCache<FavoriteServer, string> _favoriteServers = new(f => f.Address);
 
     private readonly SourceCache<LoginInfo, Guid> _logins = new(l => l.UserId);
+    private readonly CredentialStorage _credentialStorage = new();
 
     // When using dynamic engine management, this is used to keep track of installed engine versions.
     private readonly SourceCache<InstalledEngineVersion, string> _engineInstallations = new(v => v.Version);
@@ -290,15 +291,31 @@ public sealed class DataManager : ObservableObject
     private void LoadSqliteConfig(SqliteConnection sqliteConnection)
     {
         // Load logins.
-        _logins.AddOrUpdate(
-            sqliteConnection.Query<(Guid id, string name, string token, DateTimeOffset expires)>(
-                    "SELECT UserId, UserName, Token, Expires FROM Login")
-                .Select(l => new LoginInfo
-                {
-                    UserId = l.id,
-                    Username = l.name,
-                    Token = new LoginToken(l.token, l.expires)
-                }));
+        //_logins.AddOrUpdate(
+        //    sqliteConnection.Query<(Guid id, string name, string token, DateTimeOffset expires)>(
+        //            "SELECT UserId, UserName, Token, Expires FROM Login")
+        //        .Select(l => new LoginInfo
+        //        {
+        //            UserId = l.id,
+        //            Username = l.name,
+        //            Token = new LoginToken(l.token, l.expires)
+        //        }));
+
+        foreach (var login in sqliteConnection.Query<(Guid id, string name, DateTimeOffset expires)>(
+            "SELECT UserId, UserName, Expires FROM Login"))
+        {
+            var token = _credentialStorage.Get(login.id);
+
+            if (token is null)
+                continue;
+
+            _logins.AddOrUpdate(new LoginInfo
+            {
+                UserId = login.id,
+                Username = login.name,
+                Token = new LoginToken(token, login.expires)
+            });
+        }
 
         // Favorites
         _favoriteServers.AddOrUpdate(
@@ -447,27 +464,49 @@ public sealed class DataManager : ObservableObject
 
     private void ChangeLogin(ChangeReason reason, LoginInfo login)
     {
-        // Make immutable copy to avoid race condition bugs.
         var data = new
         {
             login.UserId,
             UserName = login.Username,
-            login.Token.Token,
             Expires = login.Token.ExpireTime
         };
+
         AddDbCommand(con =>
         {
             con.Execute(reason switch
-                {
-                    ChangeReason.Add => "INSERT INTO Login VALUES (@UserId, @UserName, @Token, @Expires)",
-                    ChangeReason.Update =>
-                        "UPDATE Login SET UserName = @UserName, Token = @Token, Expires = @Expires WHERE UserId = @UserId",
-                    ChangeReason.Remove => "DELETE FROM Login WHERE UserId = @UserId",
-                    _ => throw new ArgumentOutOfRangeException(nameof(reason), reason, null)
-                },
-                data
-            );
+            {
+                ChangeReason.Add =>
+                    """
+                INSERT INTO Login (UserId, UserName, Expires)
+                VALUES (@UserId, @UserName, @Expires)
+                """,
+
+                ChangeReason.Update =>
+                    """
+                UPDATE Login
+                SET UserName = @UserName,
+                    Expires = @Expires
+                WHERE UserId = @UserId
+                """,
+
+                ChangeReason.Remove =>
+                    "DELETE FROM Login WHERE UserId = @UserId",
+
+                _ => throw new ArgumentOutOfRangeException(nameof(reason), reason, null)
+            }, data);
         });
+
+        switch (reason)
+        {
+            case ChangeReason.Add:
+            case ChangeReason.Update:
+                _credentialStorage.Store(login.UserId, login.Token.Token);
+                break;
+
+            case ChangeReason.Remove:
+                _credentialStorage.Remove(login.UserId);
+                break;
+        }
     }
 
     private void ChangeEngineInstallation(ChangeReason reason, InstalledEngineVersion engine)
